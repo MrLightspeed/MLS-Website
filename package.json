@@ -3,7 +3,7 @@
     "@wix/cli": "^1.0.0",
     "@wix/eslint-plugin-cli": "^1.0.0",
     "eslint": "^8.25.0",
-    "react": "16.14.0",
+    "react": "19.1.0",
     "prettier": "^3.2.5",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
