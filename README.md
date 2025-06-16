@@ -54,7 +54,7 @@ Learn more about [working with the Wix CLI](https://support.wix.com/en/article/v
 
 ## Automated preview workflow
 
-This repo includes a GitHub Actions workflow that installs the Wix CLI and builds a preview of your site whenever code is pushed to the `main` branch. To enable it, add a `WIX_CLI_API_KEY` secret in your repository settings so the workflow can authenticate with your Wix site.
+This repo includes a GitHub Actions workflow that installs the Wix CLI and builds a preview of your site whenever code is pushed to the `main` branch. To enable it, add a `WIX_CLI_TOKEN` secret in your repository settings so the workflow can authenticate with your Wix site.
 
 The preview URL is posted on each pull request. A follow-up workflow checks Lighthouse performance and accessibility scores and optimizes images. Publishing to production requires approving the `Publish` workflow once these checks pass.
 

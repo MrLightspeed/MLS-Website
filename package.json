@@ -12,10 +12,13 @@
     "lint-staged": "^15.5.2",
     "prettier": "^3.2.5"
   },
+  "engines": {
+    "node": "22"
+  },
   "scripts": {
     "postinstall": "node scripts/postinstall.js",
     "dev": "wix dev",
-    "lint": "eslint . --ext .js,.ts --max-warnings=0",
+    "lint": "eslint . --ext .js,.ts --max-warnings=0 --cache",
     "format": "prettier --write .",
     "prettier:check": "prettier --check .",
     "prepare": "husky"
