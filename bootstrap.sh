@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ###############################################################################
-# bootstrap.sh v3.2 — resilient install + Husky v9-aware hooks
+# bootstrap.sh v3.3 — resilient install + Husky v9-aware hooks
 ###############################################################################
 set -euo pipefail
 trap 'rm -f "$TMP_NPMRC"' EXIT INT TERM
@@ -20,7 +20,7 @@ nvm use     "$NODE_VERSION" --silent
 echo -e "\e[32m✔  $(node -v) / npm $(npm -v)\e[0m"
 
 ###############################################################################
-# 1. temporary “defensive” npmrc (avoid duplicate proxy warnings)
+# 1. temporary defensive npmrc
 ###############################################################################
 TMP_NPMRC="$(mktemp)"
 cat >"$TMP_NPMRC" <<'EOF'
@@ -76,14 +76,13 @@ if git rev-parse --is-inside-work-tree &>/dev/null; then
   # bootstrap Husky (v9+ CLI)
   npx --yes husky >/dev/null
 
-  # use modern commands if Husky major version is >= 9
   HUSKY_MAJOR=$(node -e "console.log(require('./node_modules/husky/package.json').version.split('.')[0])")
   if [[ $HUSKY_MAJOR -ge 9 ]]; then
-    npx --yes husky hook add pre-commit "npx lint-staged"
-    npx --yes husky hook add commit-msg "npx --no -- commitlint --edit \"$1\""
+    npx --yes husky hook add pre-commit  'npx lint-staged'
+    npx --yes husky hook add commit-msg 'npx --no -- commitlint --edit "$1"'
   else
-    npx --yes husky add .husky/pre-commit "npx lint-staged"
-    npx --yes husky add .husky/commit-msg "npx --no -- commitlint --edit \"$1\""
+    npx --yes husky add .husky/pre-commit  'npx lint-staged'
+    npx --yes husky add .husky/commit-msg 'npx --no -- commitlint --edit "$1"'
   fi
 
   # ensure hooks are installed after every install
