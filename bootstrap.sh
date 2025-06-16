@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 ###############################################################################
-# bootstrap.sh v3.1 — resilient install, safe Husky hooks
+# bootstrap.sh v3.2 — resilient install + Husky v9-aware hooks
 ###############################################################################
 set -euo pipefail
 trap 'rm -f "$TMP_NPMRC"' EXIT INT TERM
@@ -54,7 +54,7 @@ export npm_config_userconfig="$TMP_NPMRC"
 ###############################################################################
 echo -e "\e[34m📦  npm ci (1st try)…\e[0m"
 if ! npm ci --silent 2>&1 | tee /tmp/npm.log; then
-  echo -e "\e[33m↻  retry with IPv4 + legacy-openssl...\e[0m"
+  echo -e "\e[33m↻  retry with IPv4 + legacy-openssl …\e[0m"
   export NODE_OPTIONS="--openssl-legacy-provider"
   npm ci --silent --network-timeout=600000 --registry=http://registry.npmjs.org/
 fi
@@ -73,14 +73,21 @@ if git rev-parse --is-inside-work-tree &>/dev/null; then
   echo -e "\e[34m🔧  configuring Husky hooks\e[0m"
   npm install -D husky lint-staged @commitlint/cli @commitlint/config-conventional --silent
 
-  # bootstrap Husky (v9+)
+  # bootstrap Husky (v9+ CLI)
   npx --yes husky >/dev/null
 
-  # hooks
-  npx --yes husky add .husky/pre-commit "npx lint-staged"
-  npx --yes husky add .husky/commit-msg 'npx --no -- commitlint --edit "$1"'
+  # figure out which command set is supported
+  if npx --yes husky --help | grep -q "hook add"; then
+    # Husky ≥ 9
+    npx --yes husky hook add pre-commit "npx lint-staged"
+    npx --yes husky hook add commit-msg 'npx --no -- commitlint --edit "$1"'
+  else
+    # Husky ≤ 8 (legacy)
+    npx --yes husky add .husky/pre-commit "npx lint-staged"
+    npx --yes husky add .husky/commit-msg 'npx --no -- commitlint --edit "$1"'
+  fi
 
-  # run Husky after each install
+  # ensure hooks are installed after every install
   npm pkg set scripts.prepare="husky"
 else
   echo -e "\e[33mℹ  not a Git repo → skipping Husky setup\e[0m"
