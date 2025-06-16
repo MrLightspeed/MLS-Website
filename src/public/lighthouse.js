@@ -1,13 +1,13 @@
 // /public/lighthouse.js
 // Add 'loading="lazy"' to all images except the first hero/LCP image
-window.addEventListener("load", () => {
-  // Preconnect to Google Fonts to improve FCP
-  const fonts = document.createElement("link")
-  fonts.rel = "preconnect"
-  fonts.href = "https://fonts.gstatic.com"
-  fonts.crossOrigin = "anonymous"
-  document.head.appendChild(fonts)
+// Preconnect to Google Fonts early to improve FCP
+const fonts = document.createElement("link")
+fonts.rel = "preconnect"
+fonts.href = "https://fonts.gstatic.com"
+fonts.crossOrigin = "anonymous"
+document.head.appendChild(fonts)
 
+window.addEventListener("load", () => {
   const images = document.querySelectorAll("img:not([loading])")
   images.forEach((img, idx) => {
     // Keep the very first hero image eager for better LCP
