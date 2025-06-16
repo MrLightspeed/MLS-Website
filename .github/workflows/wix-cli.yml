@@ -8,11 +8,36 @@ on:
 jobs:
   preview:
     runs-on: ubuntu-latest
+
     steps:
+      # 1. Check out repo
       - uses: actions/checkout@v3
+
+      # 2. Node + npm cache
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - run: npm install -g @wix/cli
-      - run: wix login --api-key ${{ secrets.WIX_CLI_TOKEN }}
-      - run: wix preview
+          cache: 'npm'
+
+      # 3. Global Wix CLI (keep CLI isolated from package.json)
+      - run: npm install -g @wix/cli@latest
+
+      # 4. Non-interactive auth
+      - name: Wix login
+        run: wix login --api-key "${{ secrets.WIX_CLI_TOKEN }}"
+
+      # 5. Build shareable preview under a pseudo-TTY
+      - name: Run Wix preview in a TTY
+        id: preview
+        env:
+          # Avoid “TERM not set” inside script(1)
+          TERM: xterm
+        run: |
+          # script -q = quiet, -e = propagate exit code, -c = command
+          script -q -e -c "wix preview --json --report-file preview.json" /dev/null
+          PREVIEW_URL=$(jq -r '.previewUrl' preview.json)
+          echo "url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
+
+      # 6. Simple log (optional)
+      - name: Show preview link
+        run: echo "🔗 Preview URL => ${{ steps.preview.outputs.url }}"
