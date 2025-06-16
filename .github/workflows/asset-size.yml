@@ -13,21 +13,11 @@ jobs:
           node-version: "22"
           cache: "npm"
       - run: npm ci
-      - name: Compute size
+      - uses: broccoli/actions-asset-size@v2
         id: size
-        run: |
-          git fetch origin ${{ github.base_ref }}
-          base_size=$(git ls-tree -r origin/${{ github.base_ref }} --name-only | grep -E '\.(js|css)$' | xargs -r -I{} git show origin/${{ github.base_ref }}:{} | wc -c)
-          head_size=$(git ls-tree -r HEAD --name-only | grep -E '\.(js|css)$' | xargs -r -I{} git show HEAD:{} | wc -c)
-          diff=$((head_size - base_size))
-          echo "diff_bytes=$diff" >> "$GITHUB_OUTPUT"
-      - name: Comment diff
-        uses: peter-evans/create-or-update-comment@v3
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            JS/CSS size diff: ${{ steps.size.outputs.diff_bytes }} bytes
+          compression: gzip
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Fail if too big
-        if: ${{ steps.size.outputs.diff_bytes }} > 25000
-        run: |
-          echo "Size increase exceeds limit" && exit 1
+        if: ${{ steps.size.outputs.delta_uncompressed_bytes }} > 25000
+        run: exit 1

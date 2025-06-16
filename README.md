@@ -44,6 +44,12 @@ For more information, see [Working with the Local Editor](https://support.wix.co
 
 The Wix CLI lets you preview and publish the site from the command line. Run `wix preview` to generate a preview link locally. Use `wix publish` to publish once your changes pass the CI gate. You can also use the CLI to install [approved npm packages](https://support.wix.com/en/article/velo-working-with-npm-packages) to your site.
 
+## Local commands
+
+- `npm run lint` runs ESLint with zero warnings allowed.
+- `npm run format` formats files with Prettier.
+- `npm run prettier:check` verifies formatting without writing changes.
+
 Learn more about [working with the Wix CLI](https://support.wix.com/en/article/velo-working-with-the-wix-cli-beta).
 
 ## Automated preview workflow
@@ -66,7 +72,7 @@ Run `wix preview` to generate a shareable link for the current branch. The Previ
 
 ## Continuous integration
 
-Pull requests must pass linting and formatting checks. The Quality Gate workflow runs Lighthouse and axe-core to enforce performance and accessibility scores above 90 and compresses images automatically. Production deploys require approving the Publish workflow once these checks succeed.
+Pull requests must pass linting and formatting checks. The Quality Gate workflow runs Lighthouse and axe-core to enforce performance and accessibility scores above 90 and compresses images automatically. Production deploys require approving the Publish workflow once these checks succeed. An asset-size workflow guards JS and CSS bundle growth while CodeQL checks for high severity vulnerabilities on each pull request.
 
 ## Security
 
