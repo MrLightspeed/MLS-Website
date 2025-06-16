@@ -5,7 +5,7 @@
 set -euo pipefail
 trap 'rm -f "$TMP_NPMRC"' EXIT INT TERM
 
-NODE_VERSION=22
+NODE_VERSION="$(cat .nvmrc)"
 WIX_CLI=@wix/cli@latest
 
 echo -e "\e[34m🔄  Ensuring nvm + Node $NODE_VERSION\e[0m"
@@ -30,9 +30,27 @@ fetch-retry-maxtimeout=60000
 prefer-offline=true
 EOF
 # copy proxy vars **only once** (npm 11 hates duplicates)
+declare -A _seen_proxy
 for v in HTTP_PROXY HTTPS_PROXY http_proxy https_proxy; do
-  [[ -n "${!v:-}" ]] && echo "${v,,}=${!v}" >>"$TMP_NPMRC"   # lower-case key
+  val=${!v:-}
+  [[ -z "$val" ]] && continue
+  case ${v,,} in
+    http_proxy)
+      key=proxy
+      ;;
+    https_proxy)
+      key=https-proxy
+      ;;
+    *)
+      key=${v,,}
+      ;;
+  esac
+  if [[ -z "${_seen_proxy[$key]:-}" ]]; then
+    echo "$key=$val" >>"$TMP_NPMRC"
+    _seen_proxy[$key]=1
+  fi
 done
+unset npm_config_http_proxy npm_config_https_proxy
 export npm_config_userconfig="$TMP_NPMRC"
 
 ###############################################################################
