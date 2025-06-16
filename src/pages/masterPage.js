@@ -1,7 +1,7 @@
 // API Reference: https://www.wix.com/velo/reference/api-overview/introduction
 // “Hello, World!” Example: https://learn-code.wix.com/en/article/hello-world
 
-import '/public/lighthouse.js'
+import "/public/lighthouse.js"
 
 $w.onReady(function () {
   // Write your JavaScript here
