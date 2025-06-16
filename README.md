@@ -9,7 +9,7 @@ This repo is connected to a Wix site. That site tracks this repo's default branc
 
 Before getting started, make sure you have the following things installed:
 * [Git](https://git-scm.com/download)
-* [Node](https://nodejs.org/en/download/), version 18 (use `nvm use` to load the version specified in `.nvmrc`).
+* [Node](https://nodejs.org/en/download/), version 22 (run `nvm use` to load the version in `.nvmrc`).
 * [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) or [yarn](https://yarnpkg.com/getting-started/install)
 * An SSH key [added to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
 
@@ -37,12 +37,17 @@ Start the Local Editor by navigating to this repo's directory in your terminal a
 For more information, see [Working with the Local Editor](https://support.wix.com/en/article/velo-working-with-the-local-editor-beta).
 
 ## Preview and publish with the Wix CLI
-The Wix CLI is a tool that allows you to work with your site locally from your computer's terminal. You can use it to build a preview version of your site and publish it. You can also use the CLI to install [approved npm packages](https://support.wix.com/en/article/velo-working-with-npm-packages) to your site.
+The Wix CLI lets you preview and publish the site from the command line. Run `wix preview` to generate a preview link locally. Use `wix publish` to publish once your changes pass the CI gate. You can also use the CLI to install [approved npm packages](https://support.wix.com/en/article/velo-working-with-npm-packages) to your site.
 
 Learn more about [working with the Wix CLI](https://support.wix.com/en/article/velo-working-with-the-wix-cli-beta).
 
 ## Automated preview workflow
 This repo includes a GitHub Actions workflow that installs the Wix CLI and builds a preview of your site whenever code is pushed to the `main` branch. To enable it, add a `WIX_CLI_API_KEY` secret in your repository settings so the workflow can authenticate with your Wix site.
+
+The preview URL is posted on each pull request. A follow-up workflow checks Lighthouse performance and accessibility scores and optimizes images. Publishing to production requires approving the `Publish` workflow once these checks pass.
+
+## Asset optimisation
+Run `npx squoosh-cli <file>` on any images inside `src/public` to manually compress them. The CI workflow will attempt the same optimisation and commit changes when the total size is reduced by more than 5%.
 
 ## Invite contributors to work with you
 Git Integration & Wix CLI extends Editor X's [concurrent editing](https://support.wix.com/en/article/editor-x-about-concurrent-editing) capabilities. Invite other developers as collaborators on your [site](https://support.wix.com/en/article/inviting-people-to-contribute-to-your-site) and your [GitHub repo](https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-access-to-your-personal-repositories/inviting-collaborators-to-a-personal-repository). Multiple developers can work on a site's code at once.

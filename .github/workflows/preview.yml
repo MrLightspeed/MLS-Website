@@ -1,0 +1,62 @@
+name: Preview
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-preview:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      # Checkout repository
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # Cache global npm directory
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Wix CLI
+        run: npm install -g @wix/cli
+
+      - name: Wix login
+        run: wix login --api-key ${{ secrets.WIX_CLI_TOKEN }}
+
+      - name: Build preview
+        id: preview
+        run: |
+          wix preview --verbose | tee preview.log
+          grep -oE 'https?://[^ ]+' preview.log | tail -n1 > preview_url.txt
+          cat preview_url.txt
+
+      - name: Upload preview URL
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-url
+          path: preview_url.txt
+
+      - name: Audit dependencies
+        run: npm audit --production --audit-level=high
+
+      - name: Comment preview link
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Preview URL: $(cat preview_url.txt)

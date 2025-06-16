@@ -1,0 +1,95 @@
+name: Quality Gate
+
+on:
+  workflow_run:
+    workflows: ["Preview"]
+    types:
+      - completed
+
+jobs:
+  lighthouse:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: preview-url
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Read URL
+        id: read
+        run: echo "url=$(cat preview_url.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run Lighthouse
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: ${{ steps.read.outputs.url }}
+          configPath: .github/lighthouserc.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+  accessibility:
+    needs: lighthouse
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: preview-url
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Read URL
+        id: read
+        run: echo "url=$(cat preview_url.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install axe-core CLI
+        run: npm install -g @axe-core/cli
+
+      - name: Run accessibility tests
+        run: |
+          axe ${{ steps.read.outputs.url }} --tags wcag2a,wcag2aa --exit
+
+  images:
+    needs: accessibility
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install squoosh-cli
+        run: npm install -g @squoosh/cli
+      - name: Compress images
+        run: |
+          files=$(find src/public -type f -regex '.*\.(png|jpg|jpeg|webp)' || true)
+          if [ -z "$files" ]; then echo "No images" && exit 0; fi
+          before=$(du -cb $files | tail -n1 | cut -f1)
+          npx squoosh-cli $files
+          after=$(du -cb $files | tail -n1 | cut -f1)
+          if [ "$before" -eq 0 ]; then exit 0; fi
+          reduction=$(( (before - after) * 100 / before ))
+          echo "Reduction: $reduction%"
+          if [ $reduction -gt 5 ]; then
+            git config user.name github-actions
+            git config user.email actions@github.com
+            git add $files
+            git commit -m 'chore(images): compress assets'
+            git push
+          else
+            echo 'No significant reduction'
+          fi
