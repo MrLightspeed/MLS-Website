@@ -80,10 +80,10 @@ if git rev-parse --is-inside-work-tree &>/dev/null; then
   HUSKY_MAJOR=$(node -e "console.log(require('./node_modules/husky/package.json').version.split('.')[0])")
   if [[ $HUSKY_MAJOR -ge 9 ]]; then
     npx --yes husky hook add pre-commit "npx lint-staged"
-    npx --yes husky hook add commit-msg 'npx --no -- commitlint --edit "$1"'
+    npx --yes husky hook add commit-msg "npx --no -- commitlint --edit \"$1\""
   else
     npx --yes husky add .husky/pre-commit "npx lint-staged"
-    npx --yes husky add .husky/commit-msg 'npx --no -- commitlint --edit "$1"'
+    npx --yes husky add .husky/commit-msg "npx --no -- commitlint --edit \"$1\""
   fi
 
   # ensure hooks are installed after every install

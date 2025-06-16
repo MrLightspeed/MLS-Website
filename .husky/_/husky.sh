@@ -1,3 +1,4 @@
+#!/usr/bin/env sh
 echo "husky - DEPRECATED
 
 Please remove the following two lines from $0:
