@@ -10,3 +10,4 @@ window.addEventListener('load', () => {
     }
     img.setAttribute('loading', 'lazy');
   });
+});
