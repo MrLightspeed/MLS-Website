@@ -16,7 +16,7 @@ jobs:
       # 2. Node + npm cache
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 22
           cache: 'npm'
 
       # 3. Global Wix CLI (keep CLI isolated from package.json)
