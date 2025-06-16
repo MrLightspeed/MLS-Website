@@ -1,3 +1,7 @@
 {
-  "extends": ["plugin:@wix/cli/recommended"]
+  "extends": [
+    "plugin:@wix/cli/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:security/recommended"
+  ]
 }

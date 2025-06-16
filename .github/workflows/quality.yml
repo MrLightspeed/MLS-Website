@@ -23,15 +23,32 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-
+          node-version: "22"
+      - name: Cache Playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+      - name: Install Playwright
+        run: npx playwright install chromium
       - name: Run Lighthouse
+        id: lh
+        continue-on-error: true
         uses: treosh/lighthouse-ci-action@v11
         with:
           urls: ${{ steps.read.outputs.url }}
           configPath: .github/lighthouserc.json
           uploadArtifacts: true
           temporaryPublicStorage: true
+      - name: Lighthouse report
+        uses: JackywithaWhiteDog/lighthouse-viewer-action@v2
+        with:
+          resultsPath: .lighthouseci
+          lighthouseOutcome: ${{ steps.lh.outcome }}
+      - if: steps.lh.outcome != 'success'
+        run: exit 1
 
   accessibility:
     needs: lighthouse
@@ -50,7 +67,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Install axe-core CLI
         run: npm install -g @axe-core/cli
@@ -71,7 +88,7 @@ jobs:
           ref: ${{ github.event.workflow_run.head_branch }}
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
       - name: Install squoosh-cli
         run: npm install -g @squoosh/cli
       - name: Compress images
