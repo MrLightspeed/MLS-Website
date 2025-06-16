@@ -26,7 +26,7 @@ if (heroImg && heroImg.src) {
   heroImg.setAttribute("fetchpriority", "high")
 }
 
-window.addEventListener("load", () => {
+document.addEventListener("DOMContentLoaded", () => {
   const images = document.querySelectorAll("img:not([loading])")
   images.forEach((img, idx) => {
     // Keep the very first hero image eager for better LCP
@@ -40,10 +40,8 @@ window.addEventListener("load", () => {
       img.setAttribute("alt", "")
     }
   })
-})
 
-// Ensure the main heading remains readable for accessibility
-document.addEventListener("DOMContentLoaded", () => {
+  // Ensure the main heading remains readable for accessibility
   const h1 = document.querySelector("h1")
   if (h1) {
     const size = parseFloat(getComputedStyle(h1).fontSize)
