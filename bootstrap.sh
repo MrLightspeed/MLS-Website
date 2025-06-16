@@ -76,13 +76,12 @@ if git rev-parse --is-inside-work-tree &>/dev/null; then
   # bootstrap Husky (v9+ CLI)
   npx --yes husky >/dev/null
 
-  # figure out which command set is supported
-  if npx --yes husky --help | grep -q "hook add"; then
-    # Husky ≥ 9
+  # use modern commands if Husky major version is >= 9
+  HUSKY_MAJOR=$(node -e "console.log(require('./node_modules/husky/package.json').version.split('.')[0])")
+  if [[ $HUSKY_MAJOR -ge 9 ]]; then
     npx --yes husky hook add pre-commit "npx lint-staged"
     npx --yes husky hook add commit-msg 'npx --no -- commitlint --edit "$1"'
   else
-    # Husky ≤ 8 (legacy)
     npx --yes husky add .husky/pre-commit "npx lint-staged"
     npx --yes husky add .husky/commit-msg 'npx --no -- commitlint --edit "$1"'
   fi
