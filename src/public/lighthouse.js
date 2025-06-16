@@ -41,3 +41,23 @@ window.addEventListener("load", () => {
     }
   })
 })
+
+// Ensure the main heading remains readable for accessibility
+document.addEventListener("DOMContentLoaded", () => {
+  const h1 = document.querySelector("h1")
+  if (h1) {
+    const size = parseFloat(getComputedStyle(h1).fontSize)
+    if (!Number.isNaN(size) && size < 20) {
+      h1.style.fontSize = "24px"
+    }
+  }
+
+  // Provide alt text for the Open Graph image if missing
+  const ogImage = document.querySelector("meta[property='og:image']")
+  if (ogImage && !document.querySelector("meta[property='og:image:alt']")) {
+    const meta = document.createElement("meta")
+    meta.setAttribute("property", "og:image:alt")
+    meta.setAttribute("content", "Lightspeed Listings hero image")
+    document.head.appendChild(meta)
+  }
+})
