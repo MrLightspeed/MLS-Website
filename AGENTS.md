@@ -1,7 +1,7 @@
 # MLS Website Repository Guidelines
 
 ## Environment Setup
-- Use Node.js 18 via `nvm use` (see `.nvmrc`).
+- Use Node.js 22 via `nvm use` (see `.nvmrc`).
 - Install dependencies with `npm install`.
 - Install Wix CLI globally with `npm install -g @wix/cli`.
 
