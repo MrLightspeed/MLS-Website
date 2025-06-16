@@ -10,34 +10,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Check out repo
+      # 1 Checkout
       - uses: actions/checkout@v3
 
-      # 2. Node + npm cache
+      # 2 Node runtime + npm cache
       - uses: actions/setup-node@v3
         with:
           node-version: 22
-          cache: 'npm'
+          cache: npm
 
-      # 3. Global Wix CLI (keep CLI isolated from package.json)
+      # 3 Install the latest Wix CLI globally
       - run: npm install -g @wix/cli@latest
 
-      # 4. Non-interactive auth
+      # 4 Login (non-interactive)
       - name: Wix login
         run: wix login --api-key "${{ secrets.WIX_CLI_TOKEN }}"
 
-      # 5. Build shareable preview under a pseudo-TTY
+      # 5 Run preview under a TTY, parse the URL, expose it as a job output
       - name: Run Wix preview in a TTY
         id: preview
         env:
-          # Avoid “TERM not set” inside script(1)
-          TERM: xterm
+          TERM: xterm      # script(1) wants a valid terminal
         run: |
-          # script -q = quiet, -e = propagate exit code, -c = command
-          script -q -e -c "wix preview --report-file preview.json" /dev/null
-          PREVIEW_URL=$(jq -r '.previewUrl' preview.json)
+          set -o pipefail
+          PREVIEW_LOG=$(mktemp)
+
+          # Run inside a real PTY; save transcript to $PREVIEW_LOG
+          script -q -e -c "wix preview" "$PREVIEW_LOG"
+
+          # Echo the transcript so it appears in the Actions log
+          cat "$PREVIEW_LOG"
+
+          # Grab the first https:// URL the CLI printed
+          PREVIEW_URL=$(grep -Eo 'https://[^ ]+' "$PREVIEW_LOG" | head -n1)
+
+          # Fail clearly if nothing was captured
+          if [[ -z "$PREVIEW_URL" ]]; then
+            echo "::error::Preview URL not found in CLI output"
+            exit 1
+          fi
+
+          # Pass URL to later steps / summary
           echo "url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
 
-      # 6. Simple log (optional)
+      # 6 Show link in log (optional)
       - name: Show preview link
         run: echo "🔗 Preview URL => ${{ steps.preview.outputs.url }}"
