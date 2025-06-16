@@ -34,7 +34,7 @@ jobs:
           TERM: xterm
         run: |
           # script -q = quiet, -e = propagate exit code, -c = command
-          script -q -e -c "wix preview --json --report-file preview.json" /dev/null
+          script -q -e -c "wix preview --report-file preview.json" /dev/null
           PREVIEW_URL=$(jq -r '.previewUrl' preview.json)
           echo "url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
 
